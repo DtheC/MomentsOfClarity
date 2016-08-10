@@ -4,7 +4,9 @@ using System.Collections;
 public enum DropFunction{
 	Random,
 	Noise,
-	Sine
+	Sine,
+	Limit,
+	LimitWithSine
 }
 
 public class DropBalls : MonoBehaviour {
@@ -25,6 +27,13 @@ public class DropBalls : MonoBehaviour {
 	public float SinSpeed = 0.01f;
 	private int sinBallDropCount = 0;
 
+	public int BallLimit = 1000;
+	private int ballLimitMax = 0;
+
+	void Start(){
+		ballLimitMax = BallLimit;
+	}
+
 	void Update () {
 		switch (dropfunction) {
 		case DropFunction.Random:
@@ -35,6 +44,12 @@ public class DropBalls : MonoBehaviour {
 			break;
 		case DropFunction.Sine:
 			DropSine ();
+			break;
+		case DropFunction.Limit:
+			DropLimit ();
+			break;
+		case DropFunction.LimitWithSine:
+			DropLimitWithSineFalloff ();
 			break;
 		default:
 			break;
@@ -74,6 +89,28 @@ public class DropBalls : MonoBehaviour {
 			sinBallDropCount--;
 			float xLoc = Random.Range (transform.position.x - (XSpread / 2), transform.position.x + (XSpread / 2));
 			Instantiate (DroppedObject, new Vector3 (xLoc, transform.position.y, 0), Quaternion.identity);
+		}
+	}
+
+	void DropLimit(){
+		if (BallLimit > 0) {
+			if (Random.Range (0.0f, 1.0f) < DropChance) {
+				BallLimit--;
+				float xLoc = Random.Range (transform.position.x - (XSpread / 2), transform.position.x + (XSpread / 2));
+				Instantiate (DroppedObject, new Vector3 (xLoc, transform.position.y, 0), Quaternion.identity);
+			}
+		}
+	}
+
+	void DropLimitWithSineFalloff(){
+		if (BallLimit > 0) {
+			DropChance = (Mathf.Sin ((BallLimit * 1.0f) / (ballLimitMax * 1.0f) * 3.14f));
+			Debug.Log (DropChance);
+			if (Random.Range (0.0f, 1.0f) < DropChance) {
+				BallLimit--;
+				float xLoc = Random.Range (transform.position.x - (XSpread / 2), transform.position.x + (XSpread / 2));
+				Instantiate (DroppedObject, new Vector3 (xLoc, transform.position.y, 0), Quaternion.identity);
+			}
 		}
 	}
 }
